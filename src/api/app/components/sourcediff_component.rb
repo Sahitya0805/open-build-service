@@ -28,6 +28,11 @@ class SourcediffComponent < ApplicationComponent
     end.any?
   end
 
+  def file_truncated?(file_data)
+    diff = file_data['diff'] || {}
+    diff['shown'].to_i < diff['lines'].to_i
+  end
+
   def commentable
     BsRequestAction.find(@action.id)
   end

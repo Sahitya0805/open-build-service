@@ -42,4 +42,9 @@ class DiffListComponent < ApplicationComponent
 
     project_package_file_path(@target_package.project, @target_package, filename, rev: @target_rev, expand: 1)
   end
+
+  def file_truncated?(file_data)
+    diff = file_data['diff'] || {}
+    diff['shown'].to_i < diff['lines'].to_i
+  end
 end

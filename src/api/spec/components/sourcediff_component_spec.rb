@@ -34,4 +34,25 @@ RSpec.describe SourcediffComponent, :vcr, type: :component do
       expect(rendered_content).to have_css("turbo-frame#file-0[loading=\"lazy\"][src=\"#{first_file_url}\"]")
     end
   end
+
+  describe '#file_truncated?' do
+    let(:component) { described_class.new(bs_request: bs_request, action: bs_request.bs_request_actions.last, diff_not_cached: false) }
+
+    it 'detects truncation' do
+      expect(component.file_truncated?('diff' => { 'shown' => '5', 'lines' => '10' })).to be(true)
+    end
+
+    it 'detects no truncation' do
+      expect(component.file_truncated?('diff' => { 'shown' => '10', 'lines' => '10' })).to be(false)
+    end
+  end
+
+  it 'renders the truncated warning' do
+    action = double(webui_sourcediff: [{ 'files' => { 'a' => { 'diff' => { 'shown' => '0', 'lines' => '10' } } } }],
+                    id: bs_request.bs_request_actions.last.id, source_package: nil)
+    allow(BsRequestAction).to receive(:find).with(action.id).and_return(action)
+    render_inline(described_class.new(bs_request: bs_request, action: action, diff_not_cached: false))
+
+    expect(rendered_content).to have_text('This file is truncated.')
+  end
 end
